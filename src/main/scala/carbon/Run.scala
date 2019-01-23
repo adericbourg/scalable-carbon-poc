@@ -14,7 +14,7 @@ object Run extends App {
 
   val sockets = configuration.sockets.map {
     case Udp(port) => new UdpSocket(port, inboundQueue)
-    case Tcp(port) => new TcpSocket(port)
+    case Tcp(port) => new TcpSocket(port, inboundQueue)
   }
 
   val messageRouter = new StdOutMessageRouter(configuration.routingConfiguration.targets)

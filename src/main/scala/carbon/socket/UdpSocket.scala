@@ -1,6 +1,6 @@
 package carbon.socket
 
-import java.util.concurrent.{BlockingQueue, TimeUnit}
+import java.util.concurrent.BlockingQueue
 
 import carbon.EnqueueMessageHandler
 import carbon.model.Message
@@ -23,11 +23,12 @@ class UdpSocket(port: Int, inboundQueue: BlockingQueue[Message]) extends CarbonS
     })
 
   def bind(): Unit = {
+    println(s"Binding UDP listener on port $port")
     val channelFuture = bootstrap.bind(port).sync()
     sys.addShutdownHook {
       println("Starting UDP socket shutdown...")
       channelFuture.channel().closeFuture().sync()
-      workerGroup.shutdownGracefully(0, 30, TimeUnit.SECONDS)
+      workerGroup.shutdownGracefully().sync()
       println("UDP socket gracefully shutdown :)")
     }
   }
