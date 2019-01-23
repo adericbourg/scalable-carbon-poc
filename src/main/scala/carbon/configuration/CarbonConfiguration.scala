@@ -1,30 +1,17 @@
 package carbon.configuration
 
-import com.typesafe.config.{Config, ConfigFactory}
+import com.typesafe.config.ConfigFactory
 
-import scala.collection.mutable
-
-case class CarbonConfiguration(sockets: Iterable[SocketConfiguration])
+case class CarbonConfiguration(sockets: Iterable[SocketConfiguration],
+                               routingConfiguration: RoutingConfiguration)
 
 object CarbonConfiguration {
   def load(): CarbonConfiguration = {
     val config = ConfigFactory.load()
 
     CarbonConfiguration(
-      mkSocketConfiguration(config.getConfig("carbon.relay.socket"))
+      SocketConfiguration.mkSocketConfiguration(config.getConfig("carbon.relay.socket")),
+      RoutingConfiguration.mkRoutingConfiguration(config.getConfig("carbon.relay.routing"))
     )
-  }
-
-  private def mkSocketConfiguration(socketConfigs: Config): Iterable[SocketConfiguration] = {
-    val buffer = mutable.Buffer[SocketConfiguration]()
-    if (socketConfigs.hasPath("udp")) {
-      val udpConfig = socketConfigs.getConfig("udp")
-      buffer += Udp(udpConfig.getInt("port"))
-    }
-    if (socketConfigs.hasPath("tcp")) {
-      val tcpConfig = socketConfigs.getConfig("tcp")
-      buffer += Tcp(tcpConfig.getInt("port"))
-    }
-    buffer
   }
 }
