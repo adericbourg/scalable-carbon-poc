@@ -18,8 +18,10 @@ object Run extends App {
   }
 
   val messageRouter = new StdOutMessageRouter
-  // TODO add thread factory to have properly named threads
-  val routerPool = Executors.newFixedThreadPool(configuration.routingConfiguration.processCount)
+  val routerPool = Executors.newFixedThreadPool(
+    configuration.routingConfiguration.processCount,
+    Threading.namedThreadFactory("routing-pool")
+  )
   (1 to configuration.routingConfiguration.processCount).map(_ => new QueueMessageConsumer(inboundQueue, messageRouter))
     .foreach { consumer =>
       routerPool.submit(new Runnable {
