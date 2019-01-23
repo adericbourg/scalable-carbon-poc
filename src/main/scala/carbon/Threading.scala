@@ -6,21 +6,19 @@ import java.util.concurrent.{ConcurrentHashMap, ThreadFactory}
 object Threading {
   private val threadNumbers = new ConcurrentHashMap[String, AtomicInteger]()
 
-  def getNewTheadNumber(prefix: String): Int = {
+  def namedThreadFactory(prefix: String): ThreadFactory = new NamedThreadFactory(prefix)
+
+  private[Threading] def getNewTheadNumber(prefix: String): Int = {
     threadNumbers.computeIfAbsent(prefix, _ => new AtomicInteger(1)).getAndIncrement()
   }
 
-  def namedThreadFactory(prefix: String): ThreadFactory = new NamedThreadFactory(prefix)
-}
-
-class NamedThreadFactory(prefix: String) extends ThreadFactory {
-
-  import Threading._
-
-  override def newThread(r: Runnable): Thread = {
-    val thread = new Thread(r, s"$prefix-${getNewTheadNumber(prefix)}")
-    thread.setDaemon(true)
-    thread.setPriority(Thread.NORM_PRIORITY)
-    thread
+  class NamedThreadFactory(prefix: String) extends ThreadFactory {
+    override def newThread(r: Runnable): Thread = {
+      val thread = new Thread(r, s"$prefix-${getNewTheadNumber(prefix)}")
+      thread.setDaemon(true)
+      thread.setPriority(Thread.NORM_PRIORITY)
+      thread
+    }
   }
+
 }
