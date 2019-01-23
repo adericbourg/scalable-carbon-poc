@@ -1,6 +1,6 @@
 package carbon
 
-import java.util.concurrent.{Executors, LinkedBlockingQueue}
+import java.util.concurrent.{ArrayBlockingQueue, Executors}
 
 import carbon.configuration._
 import carbon.model.Message
@@ -10,8 +10,8 @@ import carbon.socket.{TcpSocket, UdpSocket}
 object Run extends App {
 
   val configuration = CarbonConfiguration.load()
-  val inboundQueue = new LinkedBlockingQueue[Message]()
-  
+  val inboundQueue = new ArrayBlockingQueue[Message](configuration.routingConfiguration.maxItemsInQueue)
+
   val messageRouter = new StdOutMessageRouter(configuration.routingConfiguration.targets)
   val routerPool = Executors.newFixedThreadPool(
     configuration.routingConfiguration.processCount,
