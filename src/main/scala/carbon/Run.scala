@@ -17,7 +17,7 @@ object Run extends App {
     case Tcp(port) => new TcpSocket(port)
   }
 
-  val messageRouter = new StdOutMessageRouter
+  val messageRouter = new StdOutMessageRouter(configuration.routingConfiguration.targets)
   val routerPool = Executors.newFixedThreadPool(
     configuration.routingConfiguration.processCount,
     Threading.namedThreadFactory("routing-pool")
