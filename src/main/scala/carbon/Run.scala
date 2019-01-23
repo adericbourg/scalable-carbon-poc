@@ -11,12 +11,7 @@ object Run extends App {
 
   val configuration = CarbonConfiguration.load()
   val inboundQueue = new LinkedBlockingQueue[Message]()
-
-  val sockets = configuration.sockets.map {
-    case Udp(port) => new UdpSocket(port, inboundQueue)
-    case Tcp(port) => new TcpSocket(port, inboundQueue)
-  }
-
+  
   val messageRouter = new StdOutMessageRouter(configuration.routingConfiguration.targets)
   val routerPool = Executors.newFixedThreadPool(
     configuration.routingConfiguration.processCount,
@@ -28,6 +23,11 @@ object Run extends App {
         override def run(): Unit = consumer.consume()
       })
     }
+
+  val sockets = configuration.sockets.map {
+    case Udp(port) => new UdpSocket(port, inboundQueue)
+    case Tcp(port) => new TcpSocket(port, inboundQueue)
+  }
 
   sockets.foreach { socket =>
     socket.bind()
