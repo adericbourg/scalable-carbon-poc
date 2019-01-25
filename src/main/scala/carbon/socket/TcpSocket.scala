@@ -3,6 +3,7 @@ package carbon.socket
 import java.util
 
 import carbon.model.Message
+import carbon.parsing.MetricParser
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.buffer.ByteBuf
 import io.netty.channel.nio.NioEventLoopGroup
@@ -38,7 +39,6 @@ class TcpSocket(port: Int, inboundQueue: util.Queue[Message]) extends CarbonSock
 class TcpSocketMessageHandler(queue: util.Queue[Message]) extends ChannelInboundHandlerAdapter {
   override def channelRead(ctx: ChannelHandlerContext, msg: Any): Unit = {
     val raw = msg.asInstanceOf[ByteBuf].toString(CharsetUtil.UTF_8)
-    val message = Message(raw)
-    queue.add(message)
+    MetricParser.parse(raw).foreach(queue.add)
   }
 }

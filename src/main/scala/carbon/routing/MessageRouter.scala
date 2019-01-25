@@ -12,6 +12,6 @@ class StdOutMessageRouter(targets: Iterable[Target]) extends MessageRouter {
 
   override def route(message: Message): Unit = {
     val target = roundRobinTargets.next()
-    println(s"Routing message '${message.raw}' to '${target.name}'")
+    println(s"Routing message '${message.metricName}' to '${target.name}'")
   }
 }

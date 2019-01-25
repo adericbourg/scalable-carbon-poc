@@ -4,6 +4,7 @@ import java.util
 import java.util.concurrent.BlockingQueue
 
 import carbon.model.Message
+import carbon.parsing.MetricParser
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.DatagramPacket
@@ -40,7 +41,6 @@ class UdpSocket(port: Int, inboundQueue: BlockingQueue[Message]) extends CarbonS
 class UdpSocketMessageHandler(queue: util.Queue[Message]) extends SimpleChannelInboundHandler[DatagramPacket] {
   override def channelRead0(ctx: ChannelHandlerContext, msg: DatagramPacket): Unit = {
     val raw = msg.content().toString(CharsetUtil.UTF_8)
-    val message = Message(raw)
-    queue.add(message)
+    MetricParser.parse(raw).foreach(queue.add)
   }
 }

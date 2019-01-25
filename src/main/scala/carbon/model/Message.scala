@@ -1,4 +1,3 @@
 package carbon.model
 
-case class Message(raw: String)
-
+case class Message(metricName: String, value: Double, ts: Long)
