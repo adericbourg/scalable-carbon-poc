@@ -20,7 +20,7 @@ object MetricParser {
 
   private def space[_: P]: P[Unit] = P(CharIn(" ").rep(1))
 
-  private def metricName[_: P]: P[String] = P(((CharIn("a-zA-Z").rep(1) ~ ".").rep(0) ~ CharIn("a-zA-Z").rep(1)).!)
+  private def metricName[_: P]: P[String] = P(((CharIn("a-zA-Z0-9\\-\\_").rep(1) ~ ".").rep(0) ~ CharIn("a-zA-Z0-9\\-\\_").rep(1)).!)
 
   private def timestamp[_: P]: P[Long] = P(sign ~ digit.rep(1).!).map(_.toLong)
 
