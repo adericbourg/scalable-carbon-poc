@@ -9,7 +9,7 @@ import io.netty.buffer.ByteBuf
 import io.netty.channel.nio.NioEventLoopGroup
 import io.netty.channel.socket.nio.{NioServerSocketChannel, NioSocketChannel}
 import io.netty.channel.{ChannelHandlerContext, ChannelInboundHandlerAdapter, ChannelInitializer}
-import io.netty.util.CharsetUtil
+import io.netty.util.{AttributeKey, CharsetUtil}
 
 class TcpSocket(port: Int, inboundQueue: util.Queue[Message]) extends CarbonSocket {
   private val workerGroup = new NioEventLoopGroup()
@@ -37,8 +37,31 @@ class TcpSocket(port: Int, inboundQueue: util.Queue[Message]) extends CarbonSock
 
 
 class TcpSocketMessageHandler(queue: util.Queue[Message]) extends ChannelInboundHandlerAdapter {
+  private val buffer: AttributeKey[String] = AttributeKey.valueOf("buffer");
+  private val lineDelimiter = '\n'
+
   override def channelRead(ctx: ChannelHandlerContext, msg: Any): Unit = {
-    val raw = msg.asInstanceOf[ByteBuf].toString(CharsetUtil.UTF_8)
-    MetricParser.parse(raw).foreach(queue.add)
+    var receiveBuffer = ctx.attr(buffer).get();
+    if (receiveBuffer == null) {
+      receiveBuffer = ""
+    }
+
+    // append last message with current message
+    val raw = receiveBuffer + msg.asInstanceOf[ByteBuf].toString(CharsetUtil.UTF_8)
+
+    // split at the last new line
+    val lines = raw splitAt (raw lastIndexOf lineDelimiter)
+
+    // incomplete line goes to the buffer
+    ctx.attr(buffer).set(lines._2.substring(1))
+
+    // complete lines are parsed and routed
+    MetricParser.parse(lines._1).foreach(queue.add)
+  }
+  override def channelInactive(ctx: ChannelHandlerContext): Unit = {
+    var receiveBuffer = ctx.attr(buffer).get();
+    if (receiveBuffer != null) {
+      MetricParser.parse(receiveBuffer).foreach(queue.add)
+    }
   }
 }
