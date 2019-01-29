@@ -31,7 +31,7 @@ class UdpSocket(port: Int, inboundQueue: BlockingQueue[Message]) extends CarbonS
     val channelFuture = bootstrap.bind(port).sync()
     sys.addShutdownHook {
       println("Starting UDP socket shutdown...")
-      channelFuture.channel().closeFuture().sync()
+      channelFuture.channel().close()
       workerGroup.shutdownGracefully().sync()
       println("UDP socket gracefully shutdown :)")
     }

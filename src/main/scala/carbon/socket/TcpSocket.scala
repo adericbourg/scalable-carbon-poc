@@ -28,7 +28,7 @@ class TcpSocket(port: Int, inboundQueue: util.Queue[Message]) extends CarbonSock
     val channelFuture = bootstrap.bind(port).sync()
     sys.addShutdownHook {
       println("Starting TCP socket shutdown...")
-      channelFuture.channel().closeFuture().sync()
+      channelFuture.channel().close()
       workerGroup.shutdownGracefully().sync()
       println("TCP socket gracefully shutdown :)")
     }
